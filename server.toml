@@ -1,0 +1,56 @@
+[server]
+name = "Bedwars Lobby"
+max_players = 300
+view_distance = 6
+default_gamemode = 0
+broadcast_radius = 96.0   # movement/animation reach in blocks
+
+[network]
+bind = "0.0.0.0:19132"
+max_mtu = 1492
+session_timeout_secs = 10
+max_connections_per_ip = 5
+
+[world]
+generator = "flat"   # flat | void
+limit_chunks = 8     # chunk radius around the origin; 0 = unbounded
+spawn = [0, 4, 0]
+
+[protocol]
+# Wire details that could not be verified offline; tune against a real 0.14.3 client.
+chunk_order_byte = true
+start_game_tail = "00000000000000000000000000000000"
+trace_packets = false
+hotbar_offset = 9          # placeholder slots before the real inventory (0 = plain layout)
+join_extras = false        # true = also send extra MovePlayer/Respawn packets while joining (old behaviour)
+spawn_respawn = true         # send settings + time + Respawn right before PLAYER_SPAWN (PocketMine doFirstSpawn order)
+enforce_break_time = true     # survival: reject blocks broken much faster than vanilla break time
+inventory_placeholders = false # PocketMine sends 36 slots; hotbar references are offset by 9
+adventure_permission = true  # append the permission int (2) to AdventureSettings like legacy PocketMine
+adventure_flags = "legacy" # legacy = 0.14 bit table, modern = 0.15+ table. Flip it if flying / spectator no-clip does not work
+
+[pvp]
+knockback_horizontal = 0.4
+knockback_vertical = 0.4
+attack_cooldown_ticks = 8
+max_reach = 6.0
+
+[scripting]
+enabled = true
+dir = "plugins"
+reload_check_ticks = 40    # 20 ticks = 1 s; 0 = never
+
+[bedwars]
+team_size = 2            # players per team (4 teams); bots fill the free slots
+bot_wait_secs = 40       # wait this long for humans, then add bots
+countdown_secs = 5
+respawn_secs = 5
+end_delay_secs = 10
+iron_ticks = 40          # generator intervals (20 ticks = 1 s)
+gold_ticks = 240
+emerald_ticks = 1200
+void_y = 0.0             # feet below this = void death
+build_limit_y = 120
+dir = "."                # holds maps/, shop.toml, stats.toml
+map = "original"         # maps/original.pcw, or a MCPE world folder maps/original/ (LevelDB) to import
+shop = "gui"             # gui = chest shop (players can use /shop chat), chat = chat shop only

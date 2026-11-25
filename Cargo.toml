@@ -1,0 +1,29 @@
+[package]
+name = "pocketcore"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+description = "Ultra-light MCPE 0.14.3 (protocol 70) minigame server core"
+
+[dependencies]
+# Current-thread runtime only: one OS thread, no work-stealing, lowest RSS.
+tokio = { version = "1", default-features = false, features = ["rt", "net", "time", "macros", "signal"] }
+# Chunk / BatchPacket compression (Step 3).
+flate2 = "1"
+# Luau plugin host (Step 4). Unused by Step 1-2 code but pinned now.
+mlua = { version = "0.10", features = ["luau", "vendored"] }
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+log = "0.4"
+env_logger = "0.11"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+strip = true
+# Do NOT set panic = "abort": mlua relies on unwinding to turn Rust panics
+# inside Lua callbacks into Lua errors instead of killing the server.
+
+[profile.dev]
+opt-level = 1

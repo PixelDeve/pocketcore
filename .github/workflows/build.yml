@@ -1,0 +1,59 @@
+name: build
+
+on:
+  push:
+    branches: [main, master]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write   # needed to attach files to a release
+
+jobs:
+  build:
+    name: ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # ubuntu-22.04 has glibc 2.35, so the binary also runs on the
+          # Debian-based Pterodactyl images (bookworm = glibc 2.36).
+          - runner: ubuntu-22.04
+            target: linux-x86_64
+          - runner: ubuntu-22.04-arm
+            target: linux-aarch64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - name: Test
+        run: cargo test --release
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Package
+        run: |
+          mkdir -p dist/pocketcore
+          cp target/release/pocketcore dist/pocketcore/
+          cp server.toml README.md dist/pocketcore/
+          cp -r plugins dist/pocketcore/
+          tar -C dist -czf pocketcore-${{ matrix.target }}.tar.gz pocketcore
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pocketcore-${{ matrix.target }}
+          path: pocketcore-${{ matrix.target }}.tar.gz
+
+      - name: Attach to release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: pocketcore-${{ matrix.target }}.tar.gz
